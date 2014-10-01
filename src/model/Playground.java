@@ -1,11 +1,11 @@
 package model;
 
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
 
 import model.Figure;
 import model.Player;
@@ -34,7 +34,9 @@ public class Playground {
 	private List<String> stackCoords = new ArrayList<String>();
 	private List<Player> players = new LinkedList<Player>();
 	
-	
+	/*
+	 * initialisiere Spielfeld
+	 */
 	public Playground() {
 		this.fieldArray = new Figure[FELDLAENGE];
 		this.target1 = new Figure[ZIELFELDLAENGE];
@@ -44,25 +46,36 @@ public class Playground {
 		this.anzMit = 0;
 	}
 	
+	/*
+	 * lade alle Koordinaten des Spielfeldes ein (fuer GUI)
+	 */
 	public void addCoordinates() throws FileNotFoundException{
 		// Feldkoordinaten
-		FileReader fr = new FileReader("C:\\Temp\\EclipseWorkSpace\\mensch\\src\\model\\fieldCoords.txt");
-		FileReader fr2 = new FileReader("C:\\Temp\\EclipseWorkSpace\\mensch\\src\\model\\stackCoords.txt");
-		FileReader fr3 = new FileReader("C:\\Temp\\EclipseWorkSpace\\mensch\\src\\model\\targetCoords.txt");
+
+		FileReader fr = new FileReader("fieldCoords.txt");
+		FileReader fr2 = new FileReader("stackCoords.txt");
+		FileReader fr3 = new FileReader("targetCoords.txt");
 
 		BufferedReader br = new BufferedReader(fr);
 		BufferedReader br2 = new BufferedReader(fr2);
 		BufferedReader br3 = new BufferedReader(fr3);
 
+		
 			
 		
 		
 		String zeile = null;
 		try {
+			/*
+			 * lese alle Spielfeld Koordinaten ein
+			 */
 			while((zeile = br.readLine()) != null){
 				fieldCoordinatelist.add(zeile);
 			}
 
+			/*
+			 * lese Stack koordianten der Spieler ein
+			 */
 			while((zeile = br2.readLine()) != null){
 				if(zeile.contains("Spieler1")){
 					stackCoords.add(zeile);
@@ -79,6 +92,10 @@ public class Playground {
 					stackCoords.add(zeile);
 				}
 			}
+			
+			/*
+			 * lese alle target Koordinaten der Spieler ein
+			 */
 			while((zeile = br3.readLine()) != null){
 				if(zeile.contains("Spieler1")){
 					target0Coordinatelist.add(zeile);
@@ -98,20 +115,23 @@ public class Playground {
 			
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	
 		
 		
 	}
 	
+	/*
+	 * liefere alle x,y Koordinaten der Spielfeldes zurück (als Liste)
+	 */
 	public List<String> getFieldCoordnates(){
 		return fieldCoordinatelist;
 	}
-	
+	/*
+	 * liefere alle x,y Koordinaten des targetfeldes zurück (als Liste)
+	 */
 	public List<String> getTargetCoordnates(int playerID){
 		switch(playerID){
 		case Player.SPIELER1:
@@ -128,27 +148,48 @@ public class Playground {
 		return null;
 	}
 	
+	/*
+	 * liefere alle x,y Koordinaten des Stackfeldes zurück (als Liste)
+	 */
 	public List<String> getStackCoords(){
 		return stackCoords;
 	}
+	
+	/*
+	 * Fuege Spieler hinzu und erhöhe die Anzahl der Mitspieler
+	 */
 	public void addPlayer(Player newPlayer){		
 		players.add(newPlayer);
 		anzMit++;
 	}
+	
+	/*
+	 * liefere die Anzahl der Mitspieler zurück
+	 */
 	public int getAnzMit() {
 		return anzMit;
 	}
 
+	/*
+	 * setze die Anzahl der Mitspieler auf anzMit
+	 */
 	public void setAnzMit(int anzMit) {
 		this.anzMit = anzMit;
 	}
 	
+	/*
+	 * liefere Figur an Stelle position zurück
+	 */
 	public Figure getFigureOnPosition(int position){
 		if(this.fieldArray[position] == null){
 			return null;
 		}
 	    return this.fieldArray[position];
 	}
+	
+	/*
+	 * setze Figur auf Stelle position
+	 */
 	public void setFigureOnPosition(Figure fig, int position){
 		if (fig != null) {
 			fig.setFigurePos(position);
@@ -156,6 +197,10 @@ public class Playground {
 	    this.fieldArray[position] = fig;
 	}
 	
+	/*
+	 * pruefe ob Feld an Stelle position belegt ist
+	 * falls nein => false
+	 */
 	public boolean isOccupied(int position) {
 	    if(this.fieldArray[position] == null) {
 		return false;
@@ -163,12 +208,23 @@ public class Playground {
 	    return true;
 	}	
 	
+	/*
+	 * gebe Spieler mit SpielerID zurück
+	 */
 	public Player getPlayer(int playerID){
 	    return players.get(playerID) ;
 	}
+	
+	/*
+	 * gebe Feld von Figuren des Spielfeldes zurück
+	 */
 	public Figure[] getFieldArray(){
 		return fieldArray;
 	}
+	
+	/*
+	 * gebe Feld von Figuren des targetarray zurück (Spieler speziefisch)
+	 */
 	public Figure[] getTargetArray(int playerID){
 		switch(playerID){
 		case Player.SPIELER1:
@@ -184,6 +240,9 @@ public class Playground {
 		}
 	}
 	
+	/*
+	 * setz Spielfigur eines Spielers ins targetArray
+	 */
 	public void storeFigure(Figure fig, int storagePoint){
 		int c = fig.getPlayerID();
 		switch(c)

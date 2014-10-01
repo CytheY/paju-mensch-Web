@@ -1,32 +1,36 @@
-package controller;
+package view;
 
 import java.io.IOException;
 
 import org.apache.log4j.PropertyConfigurator;
 
-import view.GUI;
-import view.TextGUI;
+import controller.Controller;
 
-public class Application {
 
+public final class Application {
+	
+	private Application(){};
     /**
      * @param args
      * @throws IOException 
      * @throws NumberFormatException 
      */
-    public static void main(String[] args) throws NumberFormatException, IOException {
+    public static void main(String[] args) throws IOException {
     	PropertyConfigurator.configure("log4j.properties");
     	
+
     	   	
     	Controller game = new Controller();
 
     	
     	TextGUI tui = new TextGUI(game);
     	GUI gui = new GUI(game);
+    	
+
     	game.addObserver(tui);
     	game.addObserver(gui);
-    	game.init();
-	
+    	
+    	game.start();
     }
 
 }

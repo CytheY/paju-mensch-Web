@@ -3,24 +3,24 @@ package observer;
 import java.util.*;
 
 public class Observable{
-	protected Vector<IObserver> subscribers = new Vector<IObserver>(2);
+	private List<IObserver> subscribers = new ArrayList<IObserver>(2);
 	
 	public void addObserver(IObserver s){
-		subscribers.addElement(s);
+		subscribers.add(s);
 	}
 	
 	public void removeObserver(IObserver s){
-		subscribers.removeElement(s);
+		subscribers.remove(s);
 	}
 	
 	public void removeAllObservers(){
-		subscribers.removeAllElements();
+		subscribers.clear();
 	}
 	
-	public void notifyObserversArray(){
+	public void notifyShowGameFrame(){
 		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
 			IObserver observer = iter.next();
-			observer.updatePrintArray();
+			observer.updateShowGameFrame();
 		}
 	}
 	
@@ -35,7 +35,41 @@ public class Observable{
 		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
 			IObserver observer = iter.next();
 			observer.updatePrintFigures();
+		}
 	}
+		
+	public void notifyObserversGetInput(){
+		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
+			IObserver observer = iter.next();
+			observer.updateInput();
+		}
+	}
+	public void notifyChoosePlayerCount(){
+		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
+			IObserver observer = iter.next();
+			observer.inputChoosePlayerCount();
+		}
+	}
+	public void notifyChooseFigure(){
+		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
+			IObserver observer = iter.next();
+			observer.updateChooseFigure();
+		}
+	}
+	public void notifyObserversRoll(){
+		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
+			IObserver observer = iter.next();
+			observer.updateObserversRoll();
+		}
+	}
+	
+	public void notifyObserversPlayerStatus(){
+		for(Iterator<IObserver> iter = subscribers.iterator(); iter.hasNext();){
+			IObserver observer = iter.next();
+			observer.updatePlayerStatus();
+		}
+	}
+	
 
-}
+
 }

@@ -1,7 +1,6 @@
 package model;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -27,15 +26,22 @@ public class Player {
 
 	private Deque<Figure> startStack = new ArrayDeque<Figure>();
 	private Figure[] pgFigureArray = new Figure[SPIELFIGUREN];
-	List<String> stackCoords = new ArrayList<String>();
+	private List<String> stackCoords = new ArrayList<String>();
 
 	public Player(int playerID) {
 		this.playerID = playerID;
+		/*
+		 * gebe der playerID "4" Spielfiguren und pushe sie auf Stack
+		 */
 		for (int i = SPIELFIGUREN - 1; i >= 0; i--) {
 			startStack.push(new Figure(i, this));
 		}
 		this.dice = new Dice();
 
+		/*
+		 * Startfeld der einzelnen Spieler wird initialisiert
+		 */
+		
 		switch (playerID) {
 		case SPIELER1:
 			this.startField = STARTFELDSPIELER1;
@@ -54,32 +60,27 @@ public class Player {
 
 	}
 
+	/*
+	 * Hole aktuelle SpielerZahl
+	 */
+	
 	public int getPlayerID() {
 		return this.playerID;
 	}
 
-	public void addStackCoords() throws NumberFormatException, IOException {
-		FileReader fr = new FileReader(
-				"C:\\Temp\\EclipseWorkSpace\\mensch\\src\\model\\stackCoords.txt");
-		BufferedReader br = new BufferedReader(fr);
 
-		String zeile = null;
-		switch (this.playerID) {
-		case SPIELER1:
-			while ((zeile = br.readLine()) != null) {
-				if (zeile.contains("Spieler1")) {
-					StringTokenizer tokenizer = new StringTokenizer(zeile);
-					int i = Integer.parseInt(tokenizer.nextToken());
-					int j = Integer.parseInt(tokenizer.nextToken());
-					stackCoords.add(i + " " + j);
-				}
-			}
-		}
-	}
+	/*
+	 * gebe List von Strings mit allen Stack koordinaten zurück
+	 */
 	
 	public List<String> getStackCoords(){
 		return stackCoords;
 	}
+	
+	/*
+	 * Hole Figur vom eigenen Stack herunter
+	 */
+	
 	public Figure popFigure() {
 		Figure tmp;
 		// Keine Figuren mehr im Startfeld!
@@ -87,15 +88,16 @@ public class Player {
 			return null;
 		}
 		tmp = startStack.pop();
-		// Figur " + tmp.getFigureID() + " wurde vom Stack geholt!
 		pgFigureArray[tmp.getFigureID()] = tmp;
 		return tmp;
 	}
 
+	/*
+	 * lege Figur zurück auf Stack, und setze Weglaenge wieder auf 0
+	 */
+	
 	public void pushFigure(Figure figure) {
 		if (startStack.size() == MAXSPIELFIGUREN) {
-			System.out
-					.println("Alle Figuren des Spielers sind bereits im Startfeld");
 			return;
 		}
 		figure.resetWegLaenge();
@@ -104,6 +106,9 @@ public class Player {
 		return;
 	}
 
+	/*
+	 * prüfe ob Stack leer ist, falls ja => true
+	 */
 	public boolean figureStackEmpty() {
 		if (startStack.isEmpty()) {
 			return true;
@@ -111,6 +116,7 @@ public class Player {
 		return false;
 	}
 
+	
 	public boolean figureArrayEmpty() {
 		for (int i = 0; i < pgFigureArray.length; i++) {
 			if (pgFigureArray[i] == null) {
@@ -122,22 +128,37 @@ public class Player {
 		return true;
 	}
 
+	/*
+	 * Hole die Groeße des SpielerStacks
+	 */
 	public int getStackSize() {
 		return startStack.size();
 	}
 	
+	/*
+	 * Würfle
+	 */
 	public int rolling() {
 		return dice.roll();
 	}
 
+	/*
+	 * Hole Startposition des Spielers
+	 */
 	public int getStartField() {
 		return this.startField;
 	}
 
+	/*
+	 * Hole Figur an Stelle figureID
+	 */
 	public Figure getFigure(int figureID) {
 		return pgFigureArray[figureID];
 	}
 
+	/*
+	 * setze Figur in targetfeld
+	 */
 	public void storeFigure(Figure fig) {
 		for (int i = 0; i < pgFigureArray.length; i++) {
 			if (pgFigureArray[i] == null) {
@@ -147,21 +168,29 @@ public class Player {
 		}
 	}
 
+	/*
+	 * Figur vom Spielfeld löschen
+	 */
 	public void removeFigureFromActiveSoldiers(Figure fig) {
 		pgFigureArray[fig.getFigureID()] = null;
 		return;
 	}
 
+	/*
+	 * gebe feld mit alle Figuren zurück
+	 */
 	public Figure[] getPgFigureArray() {
 		return pgFigureArray;
 	}
 
+	/*
+	 * gülte Spielfigur nummer überprüfen
+	 */
 	public boolean isFigureAvailable(int figID) {
-		if (figID > SPIELFIGUREN - 1 || pgFigureArray[figID] == null) {
+		if (figID > SPIELFIGUREN - 1 || pgFigureArray[figID] == null){
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 
 }

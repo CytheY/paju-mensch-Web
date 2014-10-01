@@ -1,21 +1,31 @@
 package controller;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
-import java.util.Scanner;
 
 import model.Figure;
 import model.Player;
 import model.Playground;
 import observer.Observable;
-import view.TextGUI;
 
 public class Controller extends Observable {
 
+	/*
+	 * @author juschnei, marisser
+	 */
+
+	// zeigt an in Welchem Status das Spiel ist, um die gewuenschte Aktionen
+	// auszufuehren
+	public enum GAME_STATE {
+		CHOOSE_FIG, ROLL, CHOOSE_PLAYER_COUNT, GAME_STOP
+	}
+
 	private Playground pg;
 	private int activePlayerID;
+	private int activeFigureID;
+	private GAME_STATE status;
 	private int roll;
+	private int pl = 0;
 	private static final int MAXSPIELER = 4;
 	private static final int MAXGEFAHRENEWEGLAENGE = 39;
 	private static final int GEWUERFELTESECHS = 6;
@@ -33,29 +43,178 @@ public class Controller extends Observable {
 		this.pg = new Playground();
 	}
 
-	public void init() throws NumberFormatException, IOException {
-
-		Scanner in = new Scanner(System.in);
-		System.out.println("Anzahl der Spieler eingeben");
-		int pl = in.nextInt();
-		System.out.println("pl ist " + pl);
-		
-		while (pl > MAXSPIELER ) {
-			System.out.println("Maximale Spieleranzahl: 4, bitte eingeben.");
-			pl = in.nextInt();
-		}
-		for (int i = 0; i < pl; i++) {
-			pg.addPlayer(new Player(i));
-		}
+	// Versuche die Coordinaten .txt Dateien einzulesen und lasse die Anzahl der
+	// Spieler auswaehlen
+	public void start() {
 		try {
 			pg.addCoordinates();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
 		}
-		
-		runningGame(pl);
+		status = GAME_STATE.CHOOSE_PLAYER_COUNT;
+		notifyChoosePlayerCount();
 	}
+
+	/*
+	 * Fuege Anzahl der Spieler zum Spielfel hinzu. setze aktueller Spieler auf
+	 * 0. zeichne das Spielfeld zeichne alle Spieler + Targetfelder +
+	 * Stackfelder setze "status" auf ROLL und lasse ersten spieler wuerfeln
+	 */
+
+	public void inputPlayerCount(int playerCount) {
+		pl = playerCount;
+		for (int i = 0; i < playerCount; i++) {
+			pg.addPlayer(new Player(i));
+		}
+		activePlayerID = 0;
+		notifyShowGameFrame();
+		notifyObserversPlayerStatus();
+
+		status = GAME_STATE.ROLL;
+		notifyObserversRoll();
+	}
+
+	/*
+	 * erhoehe Spieleranzahl um 1, wenn AnzahlSpieler erreicht, fange wieder bei
+	 * Spieler 0 an
+	 */
+
+	public void incrementPlayerID() {
+		if (roll == GEWUERFELTESECHS) {
+			return;
+		}
+
+		activePlayerID++;
+		if (activePlayerID == pl) {
+			activePlayerID = 0;
+		}
+	}
+	
+	/*
+	 * setze aktuelle SpielerID auf activeSpielerID
+	 */
+	public void setActivePlayerID(int activePlayerID) {
+		this.activePlayerID = activePlayerID;
+	}
+
+	/*
+	 * setze Wuerfel auf beliebige Zahl
+	 */
+	public void setRoll(int roll) {
+		this.roll = roll;
+	}
+	
+	/*
+	 * lasse erste Zahl wuerfeln zeichne Spielfeld neu zeichne Wuerfel
+	 */
+
+	public void doDice() {
+		roll = pg.getPlayer(activePlayerID).rolling();
+		notifyShowGameFrame();
+		notifyObserversPrintDice();
+
+		if ((roll != GEWUERFELTESECHS && pg.getPlayer(activePlayerID)
+				.getStackSize() == VORHANDENEFIGUREN)
+				|| (roll != GEWUERFELTESECHS
+						&& pg.getPlayer(activePlayerID).getStackSize() != VORHANDENEFIGUREN && pg
+						.getPlayer(activePlayerID).figureArrayEmpty())) {
+			for (int k = 0; k < 2 && roll != GEWUERFELTESECHS; k++) {
+				roll = pg.getPlayer(activePlayerID).rolling();
+
+				notifyObserversPrintDice();
+				/**
+				 * wenn Wurf immernoch keine 'GEWUERFELTESECHS' , naechster
+				 * Spieler
+				 **/
+
+			}
+			if (roll != GEWUERFELTESECHS) {
+				incrementPlayerID();
+				notifyObserversPlayerStatus();
+				status = GAME_STATE.ROLL;
+				notifyObserversRoll();
+				return;
+			}
+		}
+
+		/**
+		 * wenn wuerfel 'GEWUERFELTESECHS' zeigt UND spieler noch figuren auf
+		 * Stack hat UND sein Startfeld NICHT von seiner eigenen Figur besetzt
+		 * ist
+		 * 
+		 */
+		if (roll == GEWUERFELTESECHS) {
+			if (pg.getFigureOnPosition(pg.getPlayer(activePlayerID)
+					.getStartField()) != null) {
+
+				if (pg.getPlayer(activePlayerID).figureStackEmpty() == false
+						&& pg.getFigureOnPosition(
+								pg.getPlayer(activePlayerID).getStartField())
+								.getPlayerID() == activePlayerID) {
+					moveForward(pg.getFigureOnPosition(pg.getPlayer(
+							activePlayerID).getStartField()), roll);
+					notifyObserversPlayerStatus();
+					status = GAME_STATE.ROLL;
+					notifyObserversRoll();
+					notifyShowGameFrame();
+					return;
+				}
+			} else if (pg.getPlayer(activePlayerID).figureStackEmpty() == false) {
+				comingOut(activePlayerID);
+				notifyObserversPlayerStatus();
+				status = GAME_STATE.ROLL;
+				notifyObserversRoll();
+				notifyShowGameFrame();
+				return;
+			} else {
+				status = GAME_STATE.CHOOSE_FIG;
+				notifyChooseFigure();
+				notifyObserversPrintActiveFigures();
+				return;
+
+			}
+		} else if (roll != GEWUERFELTESECHS) {
+			status = GAME_STATE.CHOOSE_FIG;
+			notifyChooseFigure();
+			notifyObserversPrintActiveFigures();
+			return;
+		}
+		incrementPlayerID();
+		notifyObserversPlayerStatus();
+		notifyShowGameFrame();
+		status = GAME_STATE.ROLL;
+		notifyObserversRoll();
+	}
+
+	/*
+	 * hole aktuelle Spieleranzahl
+	 */
+
+	public int getPl() {
+		return pl;
+	}
+
+	/*
+	 * hole maximale Spieleranzahl
+	 */
+
+	public static int getMaxspieler() {
+		return MAXSPIELER;
+	}
+
+	/*
+	 * setze aktuelle Spieleranzahl
+	 */
+
+	public void setPl(int pl) {
+		this.pl = pl;
+	}
+
+	/*
+	 * Spieler hat "6". Eigenes erstes Startfeld wird abgerufen Figur wird von
+	 * eigenen Stack geholt Falls Feld von andere Figur beleget, so schmeise
+	 * diese, falls nicht, setze Figur auf Feld
+	 */
 
 	public void comingOut(int playerID) {
 		int startField = pg.getPlayer(playerID).getStartField();
@@ -69,59 +228,40 @@ public class Controller extends Observable {
 		pg.setFigureOnPosition(newFig, startField);
 	}
 
+	/*
+	 * wenn 2 Figuren auf eine postition sind/wollen, dann setze Weglaenge der
+	 * Figur auf 0 und lege geschmissene Figur zurueck auf Stack
+	 */
+
 	public void kickEnemyFigure(int position) {
 		Figure enemy = pg.getFigureOnPosition(position);
 		enemy.resetWegLaenge();
 		enemy.hasPlayer().pushFigure(enemy);
+
 	}
 
+	/*
+	 * setze Figur um die laenge "positions" nach vorne
+	 */
 	public void moveForward(Figure fig, int positions) {
-
 		int oldPos = fig.getFigurePos();
 		int newPos = oldPos + positions;
 		fig.setWeglaenge(positions);
-				
+
 		/**
-		 * wenn Figur mit aktuellen Wurf ueber eine Runde gelaufen ist -> store
-		 * into Array
+		 * wenn Figur mit aktuellen Wurf ueber eine Runde gelaufen ist, store
+		 * into Array Falls Zielfeld ueberschritten, dann lass Spielfigur an
+		 * ihrer Stelle
 		 **/
 		
-		if (fig.getWeglaenge() > MAXGEFAHRENEWEGLAENGE) {
-			int c = fig.getWeglaenge();
-			switch (c) {
-			case ERSTESZIELFELD:
-				pg.storeFigure(fig, NULL);
-				pg.getPlayer(fig.getPlayerID()).removeFigureFromActiveSoldiers(fig);
-				pg.setFigureOnPosition(null, oldPos);
-				return;
-			case ZWEITESZIELFELD:
-				pg.storeFigure(fig, EINS);
-				pg.getPlayer(fig.getPlayerID()).removeFigureFromActiveSoldiers(fig);
-				pg.setFigureOnPosition(null, oldPos);
-				return;
-			case DRITTESZIELFELD:
-				pg.storeFigure(fig, ZWEI);
-				pg.getPlayer(fig.getPlayerID()).removeFigureFromActiveSoldiers(fig);
-				pg.setFigureOnPosition(null, oldPos);
-				return;
-			case VIERTESZIELFELD:
-				pg.storeFigure(fig, DREI);
-				pg.getPlayer(fig.getPlayerID()).removeFigureFromActiveSoldiers(fig);
-				pg.setFigureOnPosition(null, oldPos);
-				return;
-			default:
-				fig.setFigurePos(oldPos);
-				return;
-			}
+		putZielfeld(fig, oldPos);
 
-		}
-		
-		if( newPos > MAXGEFAHRENEWEGLAENGE){
-			newPos = newPos % MAXGEFAHRENEWEGLAENGE;
-			fig.setFigurePos(newPos);
-		} else {
-			fig.setFigurePos(newPos);
-		}
+		/*
+		 * Wenn Spielerfigur am Ende des Feldes und WegLaenge kleiner als laenge
+		 * des Feldes, dann setze figur an Stelle 0 des Spielfeldes
+		 */
+
+		newPos = setFigureToFirstArray(fig, newPos);
 
 		/** wenn neues Feld besetzt und Figur auf Feld ist NICHT die eigene **/
 		if (pg.isOccupied(newPos)
@@ -135,132 +275,195 @@ public class Controller extends Observable {
 				&& pg.getFigureOnPosition(newPos).hasPlayer() == fig
 						.hasPlayer()) {
 			/** waehle andere Figur zum Laufen **/
-			fig = pickFigure(fig.hasPlayer().getPlayerID());
-			oldPos = fig.getFigurePos();
-			newPos = fig.getFigurePos() + positions;
-			pg.setFigureOnPosition(null, oldPos);
-			pg.setFigureOnPosition(fig, newPos);
+			notifyChooseFigure();
+			notifyObserversPrintActiveFigures();
+			return;
+
 		}
 		pg.setFigureOnPosition(null, oldPos);
 		pg.setFigureOnPosition(fig, newPos);
 		return;
-		// if feldende erreicht
 	}
 
-	public Figure pickFigure(int playerID) {
-		int tmp;
-		notifyObserversPrintActiveFigures();
-		Scanner in = new Scanner(System.in);
-		tmp = in.nextInt();
-		while(!pg.getPlayer(playerID).isFigureAvailable(tmp)) {
-			tmp = in.nextInt();
+	private int setFigureToFirstArray(Figure fig, int newPos) {
+		if (newPos > MAXGEFAHRENEWEGLAENGE) {
+			newPos = newPos % MAXGEFAHRENEWEGLAENGE;
+			fig.setFigurePos(newPos);
+		} else {
+			fig.setFigurePos(newPos);
 		}
-		return pg.getPlayer(playerID).getFigure(tmp);	
-		
+		return newPos;
 	}
 
-	public void runningGame(int pl) {
-		int i = 0;
-		while (i < pl) {
-			activePlayerID = i;
-			roll = 0;			
-			roll = pg.getPlayer(i).rolling();
-			notifyObserversPrintDice();
-		
-			/**
-			 * wenn erster Wurf keine 'GEWUERFELTESECHS' und Spieler hat noch alle Figuren auf
-			 * Stack, wuerfle 2 weitere Male
-			 **/
-			if ((roll != GEWUERFELTESECHS && pg.getPlayer(i).getStackSize() == VORHANDENEFIGUREN) 
-					|| (roll != GEWUERFELTESECHS && pg.getPlayer(i).getStackSize() != VORHANDENEFIGUREN 
-					&& pg.getPlayer(i).figureArrayEmpty() )) {
-				for (int k = 0; k < 2 && roll != GEWUERFELTESECHS; k++) {
-					roll = pg.getPlayer(i).rolling();
-					
-					notifyObserversPrintDice();
-					/** wenn Wurf immernoch keine 'GEWUERFELTESECHS' , naechster Spieler **/
+	private void putZielfeld(Figure fig, int oldPos) {
+		int c = fig.getWeglaenge();
+		if (c > MAXGEFAHRENEWEGLAENGE) {
 
-				}
-				if (roll != GEWUERFELTESECHS) {
-					i++;
-					if (i == pl) {
-						i = 0;
-					}
-					continue;
-				}
-			}
-			
+			switch (c) {
+			case ERSTESZIELFELD:
+					pg.storeFigure(fig, NULL);
+					pg.getPlayer(fig.getPlayerID())
+							.removeFigureFromActiveSoldiers(fig);
+					pg.setFigureOnPosition(null, oldPos);
+					return;
+				
+			case ZWEITESZIELFELD:
+					pg.storeFigure(fig, EINS);
+					pg.getPlayer(fig.getPlayerID())
+							.removeFigureFromActiveSoldiers(fig);
+					pg.setFigureOnPosition(null, oldPos);
+					return;
+				
+			case DRITTESZIELFELD:
 
-			/**
-			 * wenn wuerfel 'GEWUERFELTESECHS' zeigt UND spieler noch figuren auf Stack hat UND
-			 * sein Startfeld NICHT von seiner eigenen Figur besetzt ist
-			 * 
-			 */
-			
-			if (roll == GEWUERFELTESECHS && pg.getPlayer(i).figureStackEmpty() == false) {
-				System.out.println("Spieler " + i + " kommt raus!");
-				comingOut(i);
-			} else if (roll == GEWUERFELTESECHS && pg.getPlayer(i).figureStackEmpty() == true) {
-				moveForward(pickFigure(i), roll);
-			} else if (roll != GEWUERFELTESECHS) {
-				moveForward(pickFigure(i), roll);
+					pg.storeFigure(fig, ZWEI);
+					pg.getPlayer(fig.getPlayerID())
+							.removeFigureFromActiveSoldiers(fig);
+					pg.setFigureOnPosition(null, oldPos);
+					return;
+				
+			case VIERTESZIELFELD:
+
+					pg.storeFigure(fig, DREI);
+					pg.getPlayer(fig.getPlayerID())
+							.removeFigureFromActiveSoldiers(fig);
+					pg.setFigureOnPosition(null, oldPos);
+					return;
+				
+			default:
+				fig.setFigurePos(oldPos);
+				return;
 			}
-			i++;
-			if (i == pl) {
-				i = 0;
-			}
-			notifyObserversArray();
-			
+		} else {
+			notifyChooseFigure();
+			notifyObserversPrintActiveFigures();
+
 		}
+	}
+
+	public void setPickFigure(int figureID) {
+		if (pg.getPlayer(activePlayerID).isFigureAvailable(figureID)) {
+			activeFigureID = figureID;
+			moveForward(pg.getPlayer(activePlayerID).getFigure(activeFigureID),
+					roll);
+		}
+		incrementPlayerID();
+		notifyObserversPlayerStatus();
+		notifyShowGameFrame();
+		status = GAME_STATE.ROLL;
+		notifyObserversRoll();
+		return;
 	}
 
 	public void update() {
-		// TODO Auto-generated method stub
-		
+
 	}
-	
-	
+
+	/*
+	 * hole den aktuell spielenden Spieler
+	 */
+
 	public Player getActivePlayer() {
 		return pg.getPlayer(activePlayerID);
 	}
-	
+
+	/*
+	 * hole den aktuell gewuerfelten Wert
+	 */
+
 	public int getRoll() {
 		return roll;
 	}
-	public Figure[] getPlayerFigures(){
+
+	/*
+	 * Gebe Feld zurueck, mit allen Spielfiguren eines Spielers (auf Stack)
+	 */
+
+	public Figure[] getPlayerFigures() {
 		return pg.getPlayer(activePlayerID).getPgFigureArray();
 	}
-	public Figure[] getPgArray(){
+
+	/*
+	 * Gebe Spielfeld zurueck, mit allen Figuren
+	 */
+
+	public Figure[] getPgArray() {
 		return pg.getFieldArray();
 	}
-	
-	public List<String> getFieldCoords(){
+
+	/*
+	 * Liste mit Strings, wo alle x, y Koordinaten des Spielfelds hinterlegt
+	 * sind
+	 */
+
+	public List<String> getFieldCoords() {
 		return pg.getFieldCoordnates();
 	}
-	
-	public List<String> getTargetCoords(int player){
+
+	/*
+	 * Liste mit Strings, wo alle x, y Koordinaten des Targetfelds hinterlegt
+	 * sind
+	 */
+
+	public List<String> getTargetCoords(int player) {
 		return pg.getTargetCoordnates(player);
 	}
-	public List<String> getStackCoords() throws FileNotFoundException{
-		 System.out.println("tmp Stack list" + pg.getStackCoords());
+
+	/*
+	 * Liste mit Strings, wo alle x, y Koordinaten des Stackfeldes hinterlegt
+	 * sind
+	 */
+
+	public List<String> getStackCoords() throws FileNotFoundException {
 		return pg.getStackCoords();
 	}
-	public Figure getFigureOnPos(int k){
+
+	/*
+	 * Hole Figur an stelle k
+	 */
+
+	public Figure getFigureOnPos(int k) {
 		return pg.getFigureOnPosition(k);
 	}
-	
-	public int getStackSize(int playerID){
-		System.out.println("testdafadgdfg");
-		if(pg.getPlayer(playerID) == null)
-			return -1;
+
+	/*
+	 * gebe Anzahl vorhandenen Figuren auf Stack von aktuellen Spieler zurueck
+	 */
+
+	public int getStackSize(int playerID) {
 		return pg.getPlayer(playerID).getStackSize();
 	}
-	
-	public int getAnzahlMitspieler(){
-		return pg.getAnzMit();
+
+	/*
+	 * gebe Anzahl Mitspieler zurueck
+	 */
+
+	public int getAnzahlMitspieler() {
+		return pl;
 	}
-	
-	public Figure[] getTargetFigureArray(int playerID){
+
+	/*
+	 * gebe von Spieler das Zielfeld-Array zurueck
+	 */
+
+	public Figure[] getTargetFigureArray(int playerID) {
 		return pg.getTargetArray(playerID);
 	}
+
+	/*
+	 * Hole den aktuellen Spielstatus
+	 */
+
+	public GAME_STATE getStatus() {
+		return status;
+	}
+
+	/*
+	 * setze den aktuellen Spielstatus
+	 */
+
+	public void setStatus(GAME_STATE status) {
+		this.status = status;
+	}
+
 }
