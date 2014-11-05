@@ -1,4 +1,4 @@
-package tui;
+package de.paju.mensch.test.controller.tui;
 
 import static org.junit.Assert.*;
 

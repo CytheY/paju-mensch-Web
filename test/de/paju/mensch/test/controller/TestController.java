@@ -1,4 +1,4 @@
-package controller;
+package de.paju.mensch.test.controller;
 
 import java.io.IOException;
 

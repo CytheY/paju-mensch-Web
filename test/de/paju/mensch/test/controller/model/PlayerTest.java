@@ -1,4 +1,4 @@
-package model;
+package de.paju.mensch.test.controller.model;
 
 import static org.junit.Assert.*;
 
