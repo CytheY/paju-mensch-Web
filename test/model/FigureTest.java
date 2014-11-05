@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.paju.mensch.model.Figure;
+import de.paju.mensch.model.Player;
+
 
 public class FigureTest {
 

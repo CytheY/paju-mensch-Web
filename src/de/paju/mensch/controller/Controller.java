@@ -1,12 +1,12 @@
-package controller;
+package de.paju.mensch.controller;
 
 import java.io.FileNotFoundException;
 import java.util.List;
 
-import model.Figure;
-import model.Player;
-import model.Playground;
-import observer.Observable;
+import de.paju.mensch.model.Figure;
+import de.paju.mensch.model.Player;
+import de.paju.mensch.model.Playground;
+import de.paju.mensch.observer.Observable;
 
 public class Controller extends Observable {
 
@@ -26,14 +26,14 @@ public class Controller extends Observable {
 	private GAME_STATE status;
 	private int roll;
 	private int pl = 0;
-	public static final int MAXSPIELER = 4;
-	public static final int MAXGEFAHRENEWEGLAENGE = 39;
-	public static final int GEWUERFELTESECHS = 6;
-	public static final int VORHANDENEFIGUREN = 4;
-	public static final int ERSTESZIELFELD = 40;
-	public static final int ZWEITESZIELFELD = 41;
-	public static final int DRITTESZIELFELD = 42;
-	public static final int VIERTESZIELFELD = 43;
+	public static final int MAX_SPIELER = 4;
+	public static final int MAX_GEFAHRENE_WEG_LAENGE = 39;
+	public static final int GEWUERFELTE_SECHS = 6;
+	public static final int VORHANDENE_FIGUREN = 4;
+	public static final int ERSTES_ZIELFELD = 40;
+	public static final int ZWEITES_ZIELFELD = 41;
+	public static final int DRITTES_ZIELFELD = 42;
+	public static final int VIERTES_ZIELFELD = 43;
 	public static final int NULL = 0;
 	public static final int EINS = 1;
 	public static final int ZWEI = 2;
@@ -80,7 +80,7 @@ public class Controller extends Observable {
 	 */
 
 	public void incrementPlayerID() {
-		if (roll == GEWUERFELTESECHS) {
+		if (roll == GEWUERFELTE_SECHS) {
 			return;
 		}
 
@@ -113,12 +113,12 @@ public class Controller extends Observable {
 		notifyShowGameFrame();
 		notifyObserversPrintDice();
 
-		if ((roll != GEWUERFELTESECHS && pg.getPlayer(activePlayerID)
-				.getStackSize() == VORHANDENEFIGUREN)
-				|| (roll != GEWUERFELTESECHS
-						&& pg.getPlayer(activePlayerID).getStackSize() != VORHANDENEFIGUREN && pg
+		if ((roll != GEWUERFELTE_SECHS && pg.getPlayer(activePlayerID)
+				.getStackSize() == VORHANDENE_FIGUREN)
+				|| (roll != GEWUERFELTE_SECHS
+						&& pg.getPlayer(activePlayerID).getStackSize() != VORHANDENE_FIGUREN && pg
 						.getPlayer(activePlayerID).figureArrayEmpty())) {
-			for (int k = 0; k < 2 && roll != GEWUERFELTESECHS; k++) {
+			for (int k = 0; k < 2 && roll != GEWUERFELTE_SECHS; k++) {
 				roll = pg.getPlayer(activePlayerID).rolling();
 
 				notifyObserversPrintDice();
@@ -128,7 +128,7 @@ public class Controller extends Observable {
 				 **/
 
 			}
-			if (roll != GEWUERFELTESECHS) {
+			if (roll != GEWUERFELTE_SECHS) {
 				incrementPlayerID();
 				notifyObserversPlayerStatus();
 				status = GAME_STATE.ROLL;
@@ -143,7 +143,7 @@ public class Controller extends Observable {
 		 * ist
 		 * 
 		 */
-		if (roll == GEWUERFELTESECHS) {
+		if (roll == GEWUERFELTE_SECHS) {
 			if (pg.getFigureOnPosition(pg.getPlayer(activePlayerID)
 					.getStartField()) != null) {
 
@@ -173,7 +173,7 @@ public class Controller extends Observable {
 				return;
 
 			}
-		} else if (roll != GEWUERFELTESECHS) {
+		} else if (roll != GEWUERFELTE_SECHS) {
 			status = GAME_STATE.CHOOSE_FIG;
 			notifyChooseFigure();
 			notifyObserversPrintActiveFigures();
@@ -199,7 +199,7 @@ public class Controller extends Observable {
 	 */
 
 	public static int getMaxspieler() {
-		return MAXSPIELER;
+		return MAX_SPIELER;
 	}
 
 	/*
@@ -286,8 +286,8 @@ public class Controller extends Observable {
 	}
 
 	private int setFigureToFirstArray(Figure fig, int newPos) {
-		if (newPos > MAXGEFAHRENEWEGLAENGE) {
-			newPos = newPos % MAXGEFAHRENEWEGLAENGE;
+		if (newPos > MAX_GEFAHRENE_WEG_LAENGE) {
+			newPos = newPos % MAX_GEFAHRENE_WEG_LAENGE;
 			fig.setFigurePos(newPos);
 		} else {
 			fig.setFigurePos(newPos);
@@ -297,24 +297,24 @@ public class Controller extends Observable {
 
 	private void putZielfeld(Figure fig, int oldPos) {
 		int c = fig.getWeglaenge();
-		if (c > MAXGEFAHRENEWEGLAENGE) {
+		if (c > MAX_GEFAHRENE_WEG_LAENGE) {
 
 			switch (c) {
-			case ERSTESZIELFELD:
+			case ERSTES_ZIELFELD:
 					pg.storeFigure(fig, NULL);
 					pg.getPlayer(fig.getPlayerID())
 							.removeFigureFromActiveSoldiers(fig);
 					pg.setFigureOnPosition(null, oldPos);
 					return;
 				
-			case ZWEITESZIELFELD:
+			case ZWEITES_ZIELFELD:
 					pg.storeFigure(fig, EINS);
 					pg.getPlayer(fig.getPlayerID())
 							.removeFigureFromActiveSoldiers(fig);
 					pg.setFigureOnPosition(null, oldPos);
 					return;
 				
-			case DRITTESZIELFELD:
+			case DRITTES_ZIELFELD:
 
 					pg.storeFigure(fig, ZWEI);
 					pg.getPlayer(fig.getPlayerID())
@@ -322,7 +322,7 @@ public class Controller extends Observable {
 					pg.setFigureOnPosition(null, oldPos);
 					return;
 				
-			case VIERTESZIELFELD:
+			case VIERTES_ZIELFELD:
 
 					pg.storeFigure(fig, DREI);
 					pg.getPlayer(fig.getPlayerID())

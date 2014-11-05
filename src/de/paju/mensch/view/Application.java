@@ -1,10 +1,10 @@
-package view;
+package de.paju.mensch.view;
 
 import java.io.IOException;
 
 import org.apache.log4j.PropertyConfigurator;
 
-import controller.Controller;
+import de.paju.mensch.controller.Controller;
 
 
 public final class Application {

@@ -7,7 +7,8 @@ import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 
-import controller.Controller.GAME_STATE;
+import de.paju.mensch.controller.Controller;
+import de.paju.mensch.controller.Controller.GAME_STATE;
 
 public class TestController extends TestCase {
 

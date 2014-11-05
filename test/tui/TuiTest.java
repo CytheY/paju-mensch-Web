@@ -5,9 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import controller.Controller;
-
-import view.TextGUI;
+import de.paju.mensch.controller.Controller;
+import de.paju.mensch.view.TextGUI;
 
 public class TuiTest {
 

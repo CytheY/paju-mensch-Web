@@ -1,13 +1,12 @@
-package view;
+package de.paju.mensch.view;
 
 import java.util.Scanner;
 
-import model.Figure;
-import observer.IObserver;
-
 import org.apache.log4j.Logger;
 
-import controller.Controller;
+import de.paju.mensch.controller.Controller;
+import de.paju.mensch.model.Figure;
+import de.paju.mensch.observer.IObserver;
 
 public class TextGUI implements IObserver {
 	
@@ -44,14 +43,14 @@ public class TextGUI implements IObserver {
 		
 	}
 	
-	private final static int WUERFELEINS = 1;
-	private final static int WUERFELZWEI = 2;
-	private final static int WUERFELDREI = 3;
-	private final static int WUERFELVIER = 4;
-	private final static int WUERFELFUENF = 5;
-	private final static int WUERFELSECHS = 6;
+	private final static int WUERFEL_EINS = 1;
+	private final static int WUERFEL_ZWEI = 2;
+	private final static int WUERFEL_DREI = 3;
+	private final static int WUERFEL_VIER = 4;
+	private final static int WUERFEL_FUENF = 5;
+	private final static int WUERFEL_SECHS = 6;
 	private final static String KANTE = " ------- ";
-	private final static String LEER =  "         ";
+	private final static String LEER =  "|       |";
 	
 	private Logger logger = Logger.getLogger("view.TextGUI");
 
@@ -117,14 +116,14 @@ public class TextGUI implements IObserver {
 	}
 	
 	public void printMoveForward(Figure fig, int roll ){
-		println("Spieler " + fig.getPlayerID() + ":Figur " + fig.getFigureID() + "wurde ausgewaehlt");
+		println("Spieler " + fig.getPlayerID() + ":Figur " + fig.getFigureID() + "wurde ausgewÃ¤hlt");
 		println("    Bewegt sich um " + roll + " Schritte nach vorne");
 	}
 	
 	public void printDice(int playerID, int value){
 		println("Player " + playerID + " Wuerfel: ");
 		switch (value){
-		case WUERFELEINS:
+		case WUERFEL_EINS:
 			println(KANTE);
 			println(LEER);
 			println("|   O   |");
@@ -132,35 +131,35 @@ public class TextGUI implements IObserver {
 			println(KANTE);
 			break;
 
-		case WUERFELZWEI:
+		case WUERFEL_ZWEI:
 			println(KANTE);
 			println("|     O |");
 			println(LEER);
 			println("| O     |");
 			println(KANTE);
 			break;
-		case WUERFELDREI:
+		case WUERFEL_DREI:
 			println(KANTE);
 			println("|     O |");
 			println("|   O   |");
 			println("| O     |");
 			println(KANTE);
 			break;
-		case WUERFELVIER:
+		case WUERFEL_VIER:
 			println(KANTE);
 			println("| O   O |");
 			println(LEER);
 			println("| O   O |");
 			println(KANTE);
 			break;
-		case WUERFELFUENF:
+		case WUERFEL_FUENF:
 			println(KANTE);
 			println("| O   O |");
 			println("|   O   |");
 			println("| O   O |");
 			println(KANTE);
 			break;
-		case WUERFELSECHS:
+		case WUERFEL_SECHS:
 			println(KANTE);
 			println("| O   O |");
 			println("| O   O |");
@@ -199,7 +198,7 @@ public class TextGUI implements IObserver {
 	}
 	
 	public void updateChooseFigure(){
-		println("Spieler wählen: ");
+		println("Spieler wÃ¤hlen: ");
 	}
 
 
@@ -209,7 +208,7 @@ public class TextGUI implements IObserver {
 
 
 	public void updateObserversRoll() {
-		println("Bitte würfeln: ");
+		println("Bitte wÃ¼rfeln: ");
 	}
 
 
@@ -217,7 +216,7 @@ public class TextGUI implements IObserver {
 		int c = controller.getActivePlayer().getPlayerID();
 		switch(c){
 		case 0:
-			println("Grüner Spieler ist dran!");
+			println("GrÃ¼ner Spieler ist dran!");
 			break;
 		case 1:
 			println("Gelber Spieler ist dran!");
@@ -229,7 +228,7 @@ public class TextGUI implements IObserver {
 			println("Roter Spieler ist dran!");
 			break;
 		default:
-			println("Grüner Spieler ist dran!");
+			println("GrÃ¼ner Spieler ist dran!");
 			break;
 		}
 		

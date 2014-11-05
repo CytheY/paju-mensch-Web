@@ -5,6 +5,8 @@ import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.paju.mensch.model.Dice;
+
 
 public class DiceTest extends TestCase {
 
