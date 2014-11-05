@@ -26,18 +26,18 @@ public class Controller extends Observable {
 	private GAME_STATE status;
 	private int roll;
 	private int pl = 0;
-	private static final int MAXSPIELER = 4;
-	private static final int MAXGEFAHRENEWEGLAENGE = 39;
-	private static final int GEWUERFELTESECHS = 6;
-	private static final int VORHANDENEFIGUREN = 4;
-	private static final int ERSTESZIELFELD = 40;
-	private static final int ZWEITESZIELFELD = 41;
-	private static final int DRITTESZIELFELD = 42;
-	private static final int VIERTESZIELFELD = 43;
-	private static final int NULL = 0;
-	private static final int EINS = 1;
-	private static final int ZWEI = 2;
-	private static final int DREI = 3;
+	public static final int MAXSPIELER = 4;
+	public static final int MAXGEFAHRENEWEGLAENGE = 39;
+	public static final int GEWUERFELTESECHS = 6;
+	public static final int VORHANDENEFIGUREN = 4;
+	public static final int ERSTESZIELFELD = 40;
+	public static final int ZWEITESZIELFELD = 41;
+	public static final int DRITTESZIELFELD = 42;
+	public static final int VIERTESZIELFELD = 43;
+	public static final int NULL = 0;
+	public static final int EINS = 1;
+	public static final int ZWEI = 2;
+	public static final int DREI = 3;
 
 	public Controller() {
 		this.pg = new Playground();
